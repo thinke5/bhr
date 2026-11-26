@@ -1,6 +1,6 @@
 # bhr — browser history reading
 
-[English](README.md) · [日本語](README.ja.md)
+[English](README.md)
 
 把 Chrome 的浏览记录整理成「按天列出、你实际读过的页面」。
 工作工具、搜索页、社交网站时间线、localhost 之类的内容由配置文件过滤掉，
@@ -11,11 +11,19 @@ Chromium 系浏览器（Brave、Edge、Vivaldi、Arc）也能读取。
 
 ## 安装
 
+这是原版 [bhr](https://github.com/polidog/bhr) 的中文改写版（界面中文、带使用时长、
+可按时长/时间/域名排序、时间固定按北京时间），**crates.io 上的 `bhr` 是原版**，
+`cargo install bhr` 装到的不是这个版本。请从本仓库安装：
+
 ```sh
-cargo install bhr
-# 或者从 clone 下来的目录
-cargo install --path .
+git clone https://github.com/thinke5/bhr
+cd bhr
+cargo install --path . --force     # 装到 ~/.cargo/bin/bhr，需要重新安装时再加 --force
 ```
+
+如果以前用 `cargo install bhr` 装过原版，上面的 `--force` 会直接把它覆盖掉。
+想两个版本并存的话，可以直接用 `./target/release/bhr`，或者把装好的
+`~/.cargo/bin/bhr` 复制成 `~/.local/bin/bhr-zh` 之类的名字。
 
 ## 用法
 

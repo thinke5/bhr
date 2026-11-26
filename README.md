@@ -11,11 +11,19 @@ pointing `chrome_root` at their profile directory.
 
 ## Install
 
+This is the Chinese rework of the original [bhr](https://github.com/polidog/bhr)
+(Chinese UI, per-URL time spent, sort by time/duration/host, times rendered in
+Beijing time). **The `bhr` on crates.io is the original**, so
+`cargo install bhr` does not get you this version. Install from this repo:
+
 ```sh
-cargo install bhr
-# or, from a clone
-cargo install --path .
+git clone https://github.com/thinke5/bhr
+cd bhr
+cargo install --path . --force   # into ~/.cargo/bin/bhr
 ```
+
+`--force` replaces a previously installed original. To keep both, use
+`./target/release/bhr` directly or copy the binary to another name.
 
 ## Usage
 
