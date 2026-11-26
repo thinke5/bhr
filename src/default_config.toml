@@ -1,47 +1,51 @@
-# bhr の設定
+# bhr 的配置
 
-# Chrome のユーザーデータの場所。空なら OS の既定
+# Chrome 用户数据目录。留空则用系统默认
 # （Linux: ~/.config/google-chrome, macOS: ~/Library/Application Support/Google/Chrome）
 chrome_root = ""
 
-# 読むプロファイル。空なら Default と Profile N を全部
+# 要读取的配置文件目录。留空则读取 Default 和全部 Profile N
 profiles = []
 
-# 拾うホスト。空なら deny 以外は全部拾う。
-# 指定するとここに載っているものだけ拾う（サブドメインも含む）
+# 要收录的主机。留空则除 deny 之外全部收录。
+# 指定后只收录这里列出的（含子域名）
 allow = []
 
-# 捨てるホスト。サブドメインごと落とす（"rakuten.co.jp" で item.rakuten.co.jp も）
-# localhost・IP アドレス・auth./login. などの認証画面は常に落とす
-# TUI で x を押すとここに足される
+# 丢弃的主机。连同子域名一起丢弃（写 "rakuten.co.jp" 也会丢掉 item.rakuten.co.jp）
+# localhost、IP 地址、auth./login. 等认证页面总是丢弃
+# 在 TUI 里按 x 会把它加到这里的
 deny = [
-  # 作業の画面
+  # 工作相关页面
   "github.com", "gist.github.com",
   "accounts.google.com", "mail.google.com", "calendar.google.com",
   "docs.google.com", "drive.google.com", "meet.google.com",
   "notion.so", "slack.com", "claude.ai", "chatgpt.com", "gemini.google.com",
   "console.aws.amazon.com", "console.cloud.google.com",
   "dash.cloudflare.com", "vercel.com",
-  # SNS のタイムライン
+  # 社交网站时间线
   "x.com", "twitter.com", "bsky.app", "facebook.com", "instagram.com",
   "discord.com", "threads.net", "reddit.com",
-  # 短縮 URL
+  # 短链接
   "t.co", "bit.ly", "amzn.to", "goo.gl",
-  # 検索
+  # 搜索
   "google.com", "google.co.jp", "bing.com", "duckduckgo.com",
   "search.yahoo.co.jp", "search.brave.com",
-  # 買い物・動画
+  # 购物、视频
   "amazon.co.jp", "amazon.com", "rakuten.co.jp", "mercari.com",
   "youtube.com", "youtu.be", "nicovideo.jp", "netflix.com",
-  # 画像・CDN
+  # 图片、CDN
   "pbs.twimg.com", "i.imgur.com", "imgur.com",
 ]
 
-# URL から落とす問い合わせ。末尾 * は前方一致
+# 从 URL 中去掉的查询参数。末尾 * 表示前缀匹配
 tracking_params = [
   "utm_*", "mc_*", "fbclid", "gclid", "ref", "ref_src", "ref_url",
   "share", "spm", "si", "cmpid",
 ]
 
-# jev で検索したとき、点（0〜1）がこれ未満のページは出さない
+# 用 jev 搜索时，分数（0〜1）低于这个值的页面不出
 min_score = 0.7
+
+# 单次访问最多记录多少分钟（0 = 不封顶）。
+# 页面挂在标签页上不开时，Chrome 会记下以小时甚至天计的时长，所以要封顶
+max_visit_min = 60

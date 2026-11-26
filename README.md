@@ -1,6 +1,6 @@
 # bhr — browser history reading
 
-[日本語](README.ja.md)
+[简体中文](README.zh.md)
 
 Turn your Chrome history into a per-day list of pages you actually read.
 Work tools, search pages, SNS timelines, localhost and the like are filtered out

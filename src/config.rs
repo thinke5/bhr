@@ -19,13 +19,20 @@ pub struct Config {
     pub deny: Vec<String>,
     #[serde(default)]
     pub tracking_params: Vec<String>,
-    /// jev の点がこれ未満のページは出さない
+    /// jev 打分低于这个值的页面不出
     #[serde(default = "min_score")]
     pub min_score: f64,
+    /// 单次访问最多记多少分钟（0 表示原样；标签页挂着不开的页面常留下以天计的时长）
+    #[serde(default = "max_visit_min")]
+    pub max_visit_min: i64,
 }
 
 fn min_score() -> f64 {
     0.7
+}
+
+fn max_visit_min() -> i64 {
+    60
 }
 
 fn home() -> PathBuf {
@@ -39,7 +46,7 @@ pub fn default_path() -> PathBuf {
         .join("bhr/config.toml")
 }
 
-/// 読む。無ければ既定の中身を書いてから読む（あとで手で直せるように）。
+/// 读取配置。没有就先写入默认内容再读（方便之后手动修改）。
 pub fn load(path: &Path) -> Result<Config, Box<dyn Error>> {
     if !path.exists() {
         if let Some(dir) = path.parent() {
@@ -51,13 +58,13 @@ pub fn load(path: &Path) -> Result<Config, Box<dyn Error>> {
     toml::from_str(&text).map_err(|e| format!("{}: {e}", path.display()).into())
 }
 
-/// `deny` に1つ足す。コメントや並びは残す。
+/// 往 `deny` 里加一条。注释和顺序保持原样。
 pub fn add_deny(path: &Path, host: &str) -> Result<(), Box<dyn Error>> {
     let mut doc: toml_edit::DocumentMut = fs::read_to_string(path)?.parse()?;
     doc["deny"]
         .or_insert(toml_edit::array())
         .as_array_mut()
-        .ok_or("deny が配列ではない")?
+        .ok_or("deny 不是数组")?
         .push(host);
     fs::write(path, doc.to_string())?;
     Ok(())
@@ -82,7 +89,7 @@ impl Config {
     }
 
     pub fn allowed(&self, host: &str) -> bool {
-        // 認証・ログインの画面は、どのサイトのものでも読み物ではない
+        // 认证、登录页面，不论属于哪个网站都不是阅读内容
         let auth = ["auth.", "login.", "signin.", "accounts.", "account.", "id.", "sso."];
         if auth.iter().any(|p| host.starts_with(p)) || listed(host, &self.deny) {
             return false;
@@ -97,7 +104,7 @@ impl Config {
         })
     }
 
-    /// 行き先を1つに揃えて、ホストと一緒に返す。拾わないものは None。
+    /// 把网址规整成一个，连同主机一起返回。不收录的返回 None。
     pub fn normalize(&self, raw: &str) -> Option<(String, String)> {
         let mut url = Url::parse(raw).ok()?;
         if !matches!(url.scheme(), "http" | "https") {
@@ -126,11 +133,17 @@ impl Config {
         } else {
             url.query_pairs_mut().clear().extend_pairs(kept);
         }
-        // トップページは「読んだ記事」ではない
+        // 首页不算「读过的文章」
         if url.path() == "/" && url.query().is_none() {
             return None;
         }
         Some((url.to_string(), host))
+    }
+
+    /// 已规整的网址的主机（口径与 normalize() 一致，但不再做任何过滤）。
+    pub fn host_of(&self, url: &str) -> String {
+        let host = Url::parse(url).ok().and_then(|u| u.host_str().map(str::to_lowercase)).unwrap_or_default();
+        host.strip_prefix("www.").map_or(host.clone(), str::to_string)
     }
 }
 

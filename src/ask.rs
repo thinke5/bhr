@@ -1,4 +1,4 @@
-//! jev に「このページは検索に合うか」を聞く。
+//! 问 jev「这个页面符合搜索要求吗」。
 use std::error::Error;
 
 use clap::ValueEnum;
@@ -9,10 +9,10 @@ use serde_json::json;
 
 use crate::history::Link;
 
-/// 同時に投げる数
+/// 同时发出的请求数
 const PARALLEL: usize = 8;
 
-/// jev CLI と同じく `JEV_PROVIDER` で選ぶ（既定 typesafe）。
+/// 与 jev CLI 一样用 `JEV_PROVIDER` 选择（默认 typesafe）。
 fn provider() -> Result<ProviderKind, Box<dyn Error>> {
     match std::env::var("JEV_PROVIDER") {
         Ok(name) => Ok(ProviderKind::from_str(&name, true)?),
@@ -20,7 +20,7 @@ fn provider() -> Result<ProviderKind, Box<dyn Error>> {
     }
 }
 
-/// ページごとに、検索に合う確率（0〜1）を返す。並びは `links` と同じ。
+/// 每个页面返回「符合搜索」的概率（0〜1）。顺序与 `links` 相同。
 pub fn relevance(links: &[Link], query: &str) -> Result<Vec<f64>, Box<dyn Error>> {
     let kind = provider()?;
     let ask = move |link: &Link| -> Result<f64, String> {
@@ -36,17 +36,17 @@ pub fn relevance(links: &[Link], query: &str) -> Result<Vec<f64>, Box<dyn Error>
         };
         match jev::provider::of(kind).evaluate(&req).map_err(|e| e.to_string())?.answers.get("match") {
             Some(Answer::Noul { noul }) => Ok(*noul),
-            _ => Err("jev の答えに noul が無い".into()),
+            _ => Err("jev 的回答里没有 noul".into()),
         }
     };
-    // ponytail: 1 ページ 1 リクエスト。ページが数百を超えて遅いなら、1 リクエストに問いをまとめる
-    let chunk = links.len().div_ceil(PARALLEL).max(1);
+    // ponytail: 一页一次请求。页面多到几百以上、嫌慢的话，再把问题合进一次请求
+    let chunk = std::cmp::max(links.len().div_ceil(PARALLEL), 1);
     let scores: Vec<Result<Vec<f64>, String>> = std::thread::scope(|s| {
         let handles: Vec<_> = links
             .chunks(chunk)
             .map(|part| s.spawn(move || part.iter().map(ask).collect::<Result<Vec<_>, _>>()))
             .collect();
-        handles.into_iter().map(|h| h.join().unwrap_or_else(|_| Err("jev のスレッドが落ちた".into()))).collect()
+        handles.into_iter().map(|h| h.join().unwrap_or_else(|_| Err("jev 线程崩溃了".into()))).collect()
     });
     let mut out = Vec::with_capacity(links.len());
     for part in scores {
@@ -59,17 +59,24 @@ pub fn relevance(links: &[Link], query: &str) -> Result<Vec<f64>, Box<dyn Error>
 mod tests {
     use super::*;
 
-    /// 本物の API を叩く。`cargo test -- --ignored`（TYPESAFE_API_KEY が要る）
+    /// 调用真实 API。`cargo test -- --ignored`（需要 TYPESAFE_API_KEY）
     #[test]
     #[ignore]
     fn ranks_by_meaning() {
-        let link = |title: &str, host: &str| Link { url: format!("https://{host}/a"), host: host.into(), title: title.into() };
+        let link = |title: &str, host: &str| Link {
+            url: format!("https://{host}/a"),
+            host: host.into(),
+            title: title.into(),
+            secs: 0,
+            time: String::new(),
+            order: 0,
+        };
         let links = [
-            link("所有権と借用を図で理解する", "zenn.dev"),
-            link("今日の晩ごはんレシピ 10 選", "cookpad.com"),
+            link("图解理解所有权与借用", "zenn.dev"),
+            link("今日晚饭菜谱 10 选", "cookpad.com"),
             link("Understanding lifetimes in Rust", "blog.example.com"),
         ];
-        let s = relevance(&links, "Rust のメモリ管理").unwrap();
+        let s = relevance(&links, "Rust 的内存管理").unwrap();
         println!("{s:?}");
         assert!(s[0] > s[1] && s[2] > s[1]);
     }
