@@ -31,16 +31,22 @@ cargo install --path . --force   # into ~/.cargo/bin/bhr
 bhr                                # TUI (default)
 bhr list --day 2026-09-28          # one day as Markdown (`list` is an alias of `report`)
 bhr list --since 2026-09-01        # a range (--until also works)
-bhr list --json --since 2026-09-01 # [{"date", "links": [{"host", "title", "url"}]}]
+bhr list --json --since 2026-09-01 # [{"date", "links": [{"host", "title", "url", "secs", "time"}]}]
 bhr list --since 2026-09-01 --ask "Rust memory management"  # rank each day's pages with Jev
+bhr list --day 2026-09-28 --dur --time             # time spent and the time of day first opened
+bhr list --day 2026-09-28 --sort duration          # longest first (default --sort time)
+bhr list --day 2026-09-28 --sort host --dur        # grouped by host
 bhr searches --day 2026-09-28      # what you searched that day, and the pages opened from the results
 bhr searches --json                # [{"date", "searches": [{"term", "links": [{"host", "title", "url"}]}]}]
-bhr hosts --top 50                 # hosts by count — find what to deny
-bhr hosts --json                   # [{"host", "count"}]
+bhr hosts --top 50                 # hosts with total time — find what to deny
+bhr hosts --sort count             # by page count (default --sort duration)
+bhr hosts --json                   # [{"host", "count", "duration", "secs", "minutes"}]
 bhr config                         # print the config path
 ```
 
-`--config`, `--since`, `--until` and `--json` work with every subcommand.
+`--config`, `--since`, `--until` and `--json` work with every subcommand;
+`--dur`, `--time` and `--sort time|duration|host` belong to `list`/`report`
+(`hosts` has its own `--sort duration|count`).
 
 ### Searching from the CLI
 

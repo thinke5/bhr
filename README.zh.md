@@ -33,14 +33,20 @@ bhr list --day 2026-09-28          # 一天的记录，Markdown（`list` 是 `re
 bhr list --since 2026-09-01        # 一段时期（也可用 --until）
 bhr list --json --since 2026-09-01 # [{"date", "links": [{"host", "title", "url", "secs"}]}]
 bhr list --since 2026-09-01 --ask "Rust 内存管理"  # 用 Jev 给每天的页面打分排序
+bhr list --day 2026-09-28 --dur --time             # 显示时长和打开时刻（当天第一次打开）
+bhr list --day 2026-09-28 --sort duration          # 按时长从长到短（默认 --sort time）
+bhr list --day 2026-09-28 --sort host --dur        # 按域名聚合，每个域名一组
 bhr searches --day 2026-09-28      # 当天搜索过的词，以及从搜索结果打开的页面
 bhr searches --json                # [{"date", "searches": [{"term", "links": [{"host", "title", "url", "secs"}]}]}]
-bhr hosts --top 50                 # 按条数列出主机——用来找要排除的
-bhr hosts --json                   # [{"host", "count", "minutes"}]
+bhr hosts --top 50                 # 列出域名和合计时长——用来找要排除的
+bhr hosts --sort count             # 按页面条数排（默认 --sort duration 按时长排）
+bhr hosts --json                   # [{"host", "count", "duration", "secs", "minutes"}]
 bhr config                         # 显示配置文件路径
 ```
 
-`--config`、`--since`、`--until`、`--json` 对每个子命令都可用。
+`--config`、`--since`、`--until`、`--json` 对每个子命令都可用；
+`--dur`、`--time`、`--sort` 只对 `list`/`report` 有效
+（`hosts` 有自己的一条 `--sort duration|count`）。
 
 ### 使用时间（30s / 15min 20s / 1h 18min 3s）
 
